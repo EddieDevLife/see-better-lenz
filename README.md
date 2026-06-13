@@ -2,7 +2,6 @@
 
 > Perfis visuais para daltônicos e pessoas autistas. Sem coleta de dados. Sem servidor. Open source.
 
-![Lenz preview](docs/preview.png)
 
 ---
 
