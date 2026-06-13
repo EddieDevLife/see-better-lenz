@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lenz</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>
+        <h1>Lenz</h1>
+        <p class="sub" id="scope">Carregando…</p>
+      </div>
+    </div>
+    <label class="switch" title="Aplicar só neste site">
+      <input type="checkbox" id="perDomain" />
+      <span>Só neste site</span>
+    </label>
+  </header>
+
+  <main>
+    <section>
+      <h2>Daltonismo — correção</h2>
+      <div class="grid" id="group-cb"></div>
+    </section>
+
+    <section>
+      <h2>Espectro autista / baixa visão</h2>
+      <div class="grid" id="group-asd"></div>
+    </section>
+
+    <section>
+      <h2>Simulação (para designers)</h2>
+      <div class="grid" id="group-sim"></div>
+    </section>
+
+    <section class="intensity">
+      <label for="intensity">Intensidade <span id="intensityVal">100%</span></label>
+      <input type="range" id="intensity" min="20" max="100" step="5" value="100" />
+    </section>
+  </main>
+
+  <footer>
+    <button id="reset" class="ghost">Limpar este site</button>
+    <span class="hint">Preferências salvas por domínio.</span>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

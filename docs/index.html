@@ -1,0 +1,491 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Lenz — Acessibilidade visual para daltônicos e autistas</title>
+  <meta name="description" content="Extensão Chrome com perfis validados para daltonismo e baixa estimulação sensorial. Sem coleta de dados. Sem servidor. Código aberto." />
+  <meta property="og:title" content="Lenz — Acessibilidade visual" />
+  <meta property="og:description" content="Perfis reais para daltônicos e pessoas autistas. Matrizes Brettel/Viénot e modos de baixa estimulação. Gratuito e open source." />
+  <meta property="og:type" content="website" />
+  <meta name="theme-color" content="#0e1116" />
+  <style>
+    :root {
+      --bg: #0e1116;
+      --surface: #161a22;
+      --surface-2: #1d222c;
+      --text: #e8ecf2;
+      --muted: #8b95a7;
+      --line: #252b36;
+      --accent: #7ee0c1;
+      --accent-fg: #062018;
+      --warn: #ffb86b;
+      --radius: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100dvh; }
+    a { color: inherit; text-decoration: none; }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+    /* ─── NAV ─── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 24px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .logo {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: conic-gradient(from 180deg,#ff6b6b,#ffd166,#7ee0c1,#6aa9ff,#c084fc,#ff6b6b);
+      filter: saturate(.85); flex-shrink: 0;
+    }
+    .brand-name { font-size: 18px; font-weight: 700; letter-spacing: -.3px; }
+    nav a.nav-link { font-size: 13px; color: var(--muted); transition: color .15s; }
+    nav a.nav-link:hover { color: var(--text); }
+
+    /* ─── HERO ─── */
+    .hero {
+      display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: center;
+      padding: 32px 24px 80px;
+      max-width: 1100px; margin: 0 auto;
+    }
+    @media (max-width: 768px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-preview { display: none; }
+    }
+
+    .badge {
+      display: inline-block; border: 1px solid var(--line);
+      background: var(--surface); border-radius: 999px;
+      padding: 4px 12px; font-size: 11px; color: var(--muted);
+      margin-bottom: 20px;
+    }
+    h1 {
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 800; line-height: 1.05; letter-spacing: -.5px;
+    }
+    h1 em { color: var(--accent); font-style: normal; }
+    .hero-sub {
+      margin-top: 20px; font-size: 16px; color: var(--muted); max-width: 480px; line-height: 1.7;
+    }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+    .btn-primary {
+      background: var(--accent); color: var(--accent-fg);
+      border: none; border-radius: 10px; padding: 12px 22px;
+      font-size: 13px; font-weight: 600; cursor: pointer;
+      transition: transform .12s, opacity .12s; font-family: inherit;
+    }
+    .btn-primary:hover { transform: scale(1.02); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--line); color: var(--text);
+      border-radius: 10px; padding: 12px 22px; font-size: 13px;
+      cursor: pointer; transition: background .12s, border-color .12s; font-family: inherit;
+      text-decoration: none; display: inline-block;
+    }
+    .btn-ghost:hover { background: var(--surface); border-color: var(--muted); }
+
+    .features-list {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px;
+      margin-top: 32px; list-style: none; font-size: 13px; color: var(--muted);
+    }
+    .features-list li::before { content: "·  "; color: var(--accent); }
+
+    /* ─── PREVIEW CARD ─── */
+    .preview-card {
+      border: 1px solid var(--line); background: var(--surface);
+      border-radius: 18px; padding: 12px; box-shadow: 0 24px 64px rgba(0,0,0,.5);
+    }
+    .preview-titlebar {
+      display: flex; align-items: center; gap: 6px; padding: 0 8px 10px;
+    }
+    .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .dot-red { background: rgba(255,107,107,.8); }
+    .dot-green { background: rgba(126,224,193,.6); }
+    .dot-gray { background: rgba(139,149,167,.4); }
+    .preview-label { margin-left: 10px; font-size: 11px; color: var(--muted); }
+
+    .preview-screen {
+      aspect-ratio: 4/3; border-radius: 10px; overflow: hidden;
+      transition: filter .4s ease;
+      display: flex; flex-direction: column; justify-content: space-between;
+      padding: 24px;
+      background: linear-gradient(135deg,#ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff);
+    }
+    .preview-top { display: flex; justify-content: space-between; color: rgba(255,255,255,.9); font-size: 13px; }
+    .preview-headline { font-size: clamp(20px, 4vw, 28px); font-weight: 800; color: #fff; line-height: 1.2; }
+    .preview-body { font-size: 13px; color: rgba(255,255,255,.85); margin-top: 8px; }
+    .preview-dots { display: flex; gap: 8px; margin-top: 16px; }
+    .preview-dot { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,.3); }
+
+    .preview-hint { text-align: center; font-size: 11px; color: var(--muted); margin-top: 10px; }
+
+    /* ─── PROFILES ─── */
+    .section { padding: 0 24px 80px; max-width: 1100px; margin: 0 auto; }
+    .section-title { font-size: clamp(24px, 4vw, 36px); font-weight: 800; letter-spacing: -.3px; }
+    .section-sub { margin-top: 8px; font-size: 14px; color: var(--muted); max-width: 600px; line-height: 1.7; }
+
+    .profiles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 28px; }
+    @media (max-width: 900px) { .profiles-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 560px) { .profiles-grid { grid-template-columns: 1fr; } }
+
+    .profile-btn {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px; text-align: left;
+      cursor: pointer; font-family: inherit; color: var(--text);
+      transition: border-color .15s, box-shadow .15s; width: 100%;
+    }
+    .profile-btn:hover { border-color: rgba(139,149,167,.5); }
+    .profile-btn.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(126,224,193,.12);
+    }
+    .profile-btn.active .profile-name { color: var(--accent); }
+
+    .profile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .profile-group { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
+    .profile-name { font-size: 20px; font-weight: 700; letter-spacing: -.2px; }
+    .profile-swatch { width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0; }
+    .profile-desc { margin-top: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+
+    /* ─── WHY ─── */
+    .why-box {
+      border: 1px solid var(--line); background: var(--surface);
+      border-radius: 18px; padding: 40px 48px; max-width: 1100px; margin: 0 auto 80px;
+    }
+    @media (max-width: 640px) { .why-box { padding: 28px 20px; } }
+    .why-title { font-size: clamp(22px, 3.5vw, 32px); font-weight: 800; letter-spacing: -.3px; }
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 32px; }
+    @media (max-width: 700px) { .why-grid { grid-template-columns: 1fr; gap: 24px; } }
+    .why-num { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--accent); margin-bottom: 8px; }
+    .why-item-title { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .why-item-body { font-size: 13px; color: var(--muted); line-height: 1.6; }
+    .why-item-body code { background: var(--surface-2); padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+
+    /* ─── INSTALL ─── */
+    .install-section { max-width: 720px; margin: 0 auto; padding: 0 24px 80px; }
+    .install-steps { list-style: none; margin-top: 28px; display: flex; flex-direction: column; gap: 12px; }
+    .install-step {
+      display: flex; gap: 16px; align-items: flex-start;
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: var(--radius); padding: 18px;
+    }
+    .step-num {
+      width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: var(--accent); font-weight: 700; flex-shrink: 0;
+    }
+    .step-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+    .step-body { font-size: 13px; color: var(--muted); }
+    .step-body code {
+      background: var(--surface-2); padding: 2px 6px; border-radius: 4px;
+      font-size: 11px; color: var(--text);
+    }
+    .btn-full {
+      display: block; width: 100%; margin-top: 28px;
+      background: var(--accent); color: var(--accent-fg);
+      border: none; border-radius: 12px; padding: 16px;
+      font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+      transition: transform .12s;
+    }
+    .btn-full:hover { transform: scale(1.01); }
+
+    /* ─── FOOTER ─── */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 28px 24px;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; flex-wrap: wrap; align-items: center;
+      justify-content: space-between; gap: 12px;
+      font-size: 12px; color: var(--muted);
+    }
+    .footer-inner a { color: var(--muted); transition: color .15s; }
+    .footer-inner a:hover { color: var(--text); }
+    .footer-by { display: flex; align-items: center; gap: 6px; }
+    .footer-by .heart { color: #ff6b6b; }
+
+    /* ─── FOCUS ─── */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <span class="brand-name">Lenz</span>
+    </div>
+    <a href="#instalar" class="nav-link">Como instalar</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Apresentação">
+    <div>
+      <span class="badge">Extensão para Chrome · Edge · Brave · Arc</span>
+      <h1>Cores que <em>respeitam</em> como você enxerga.</h1>
+      <p class="hero-sub">
+        Perfis visuais para daltônicos e pessoas autistas — construídos com matrizes
+        Brettel&nbsp;/&nbsp;Viénot para correção precisa e modos de baixa estimulação.
+        Não é mais um filtro genérico.
+      </p>
+      <div class="cta-row">
+        <button class="btn-primary" onclick="download()">Baixar Lenz (.zip)</button>
+        <a href="#instalar" class="btn-ghost">Como instalar →</a>
+      </div>
+      <ul class="features-list" aria-label="Características">
+        <li>7 perfis pré-definidos</li>
+        <li>Salvo por domínio</li>
+        <li>Pausa animações</li>
+        <li>Filtros SVG precisos</li>
+        <li>Sem coleta de dados</li>
+        <li>Funciona offline</li>
+      </ul>
+    </div>
+
+    <!-- PREVIEW -->
+    <div class="hero-preview">
+      <div class="preview-card">
+        <div class="preview-titlebar">
+          <span class="dot dot-red"></span>
+          <span class="dot dot-green"></span>
+          <span class="dot dot-gray"></span>
+          <span class="preview-label" id="preview-label">preview · Baixa estimulação</span>
+        </div>
+        <div class="preview-screen" id="preview-screen">
+          <div class="preview-top">
+            <span style="font-weight:500">Aurora News</span>
+            <span style="opacity:.8;font-size:12px">13 Jun</span>
+          </div>
+          <div>
+            <div class="preview-headline">A cor não é<br>o problema.</div>
+            <div class="preview-body">É como ela aparece para cada par de olhos.</div>
+            <div class="preview-dots">
+              <span class="preview-dot" style="background:#ff006e"></span>
+              <span class="preview-dot" style="background:#fb5607"></span>
+              <span class="preview-dot" style="background:#ffbe0b"></span>
+              <span class="preview-dot" style="background:#8338ec"></span>
+              <span class="preview-dot" style="background:#3a86ff"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="preview-hint">Clique num perfil abaixo para visualizar.</p>
+    </div>
+  </section>
+
+  <!-- PROFILES -->
+  <section class="section" aria-labelledby="profiles-title">
+    <h2 class="section-title" id="profiles-title">Perfis</h2>
+    <p class="section-sub">
+      Cada perfil foi calibrado com referências da literatura (Brettel 1997, Viénot&nbsp;1999)
+      e feedback de pessoas das comunidades daltônica e autista. Você pode ajustar a
+      intensidade e salvar configurações diferentes para cada site.
+    </p>
+    <div class="profiles-grid" id="profiles-grid" role="group" aria-label="Perfis de acessibilidade"></div>
+  </section>
+
+  <!-- WHY -->
+  <div class="container">
+    <div class="why-box">
+      <h2 class="why-title">Por que não é só mais um filtro.</h2>
+      <div class="why-grid">
+        <div>
+          <p class="why-num">01</p>
+          <p class="why-item-title">Matrizes corretas</p>
+          <p class="why-item-body">
+            A maioria das extensões usa <code>hue-rotate()</code>, que distorce sem corrigir.
+            Lenz usa matrizes SVG no espaço linearRGB baseadas em pesquisa clínica.
+          </p>
+        </div>
+        <div>
+          <p class="why-num">02</p>
+          <p class="why-item-title">Feito com a comunidade</p>
+          <p class="why-item-body">
+            O modo "baixa estimulação" não é só desaturação — pausa autoplay, animações
+            e suaviza áreas que causam desconforto sensorial.
+          </p>
+        </div>
+        <div>
+          <p class="why-num">03</p>
+          <p class="why-item-title">Memória por site</p>
+          <p class="why-item-body">
+            Use alto contraste no Gmail e leitura calma na Wikipédia — o Lenz lembra.
+            Sem login, sem servidor, sem nuvem.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INSTALL -->
+  <section class="install-section" id="instalar" aria-labelledby="install-title">
+    <h2 class="section-title" id="install-title">Instalar</h2>
+    <p class="section-sub">Funciona em qualquer navegador baseado em Chromium.</p>
+    <ol class="install-steps">
+      <li class="install-step">
+        <span class="step-num">1</span>
+        <div>
+          <p class="step-title">Baixe e descompacte</p>
+          <p class="step-body">Clique em Baixar Lenz acima e extraia o <code>.zip</code> em qualquer pasta.</p>
+        </div>
+      </li>
+      <li class="install-step">
+        <span class="step-num">2</span>
+        <div>
+          <p class="step-title">Abra as extensões</p>
+          <p class="step-body">Cole <code>chrome://extensions</code> na barra de endereço e pressione Enter.</p>
+        </div>
+      </li>
+      <li class="install-step">
+        <span class="step-num">3</span>
+        <div>
+          <p class="step-title">Ative o modo desenvolvedor</p>
+          <p class="step-body">Ligue o toggle no canto superior direito da página.</p>
+        </div>
+      </li>
+      <li class="install-step">
+        <span class="step-num">4</span>
+        <div>
+          <p class="step-title">Carregar sem compactação</p>
+          <p class="step-body">Clique em <strong>Carregar sem compactação</strong> e selecione a pasta extraída.</p>
+        </div>
+      </li>
+      <li class="install-step">
+        <span class="step-num">5</span>
+        <div>
+          <p class="step-title">Pronto!</p>
+          <p class="step-body">Clique no ícone do Lenz na barra do navegador e escolha um perfil.</p>
+        </div>
+      </li>
+    </ol>
+    <button class="btn-full" onclick="download()">Baixar Lenz (.zip)</button>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-by">
+        <div class="logo" style="width:20px;height:20px;border-radius:5px;" aria-hidden="true"></div>
+        <span>Lenz · feito com <span class="heart">♥</span> por
+          <a href="https://www.linkedin.com/in/eddiedevlife" target="_blank" rel="noopener">@eddiedevlife</a>
+        </span>
+      </div>
+      <div style="display:flex;gap:20px;">
+        <a href="https://github.com/EddieDevLife/see-better-lenz" target="_blank" rel="noopener">GitHub</a>
+        <span>Sem rastreamento · Sem servidor · Código aberto</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ─── Profiles data ───
+    const PROFILES = [
+      {
+        key: "deuteranopia",
+        name: "Deuteranopia",
+        group: "Daltonismo",
+        desc: "Realça o eixo vermelho-verde para deficiência de cones M.",
+        filter: "saturate(1.4) hue-rotate(-12deg) contrast(1.05)",
+        bg: "linear-gradient(135deg,#ff6b6b,#ffd166,#7ee0c1,#6aa9ff)"
+      },
+      {
+        key: "protanopia",
+        name: "Protanopia",
+        group: "Daltonismo",
+        desc: "Compensa baixa percepção de vermelho deslocando matiz para o azul.",
+        filter: "saturate(1.3) hue-rotate(8deg) contrast(1.08)",
+        bg: "linear-gradient(135deg,#e85d75,#f4a261,#8ecae6,#219ebc)"
+      },
+      {
+        key: "tritanopia",
+        name: "Tritanopia",
+        group: "Daltonismo",
+        desc: "Reforça o eixo azul-amarelo para deficiência de cones S.",
+        filter: "saturate(1.25) hue-rotate(-20deg)",
+        bg: "linear-gradient(135deg,#f72585,#7209b7,#3a0ca3,#4cc9f0)"
+      },
+      {
+        key: "low_stimulation",
+        name: "Baixa estimulação",
+        group: "Espectro autista",
+        desc: "Reduz saturação, pausa animações e suaviza neons.",
+        filter: "saturate(0.55) contrast(0.95) brightness(0.97)",
+        bg: "linear-gradient(135deg,#ff006e,#fb5607,#ffbe0b,#8338ec,#3a86ff)"
+      },
+      {
+        key: "calm_reading",
+        name: "Leitura calma",
+        group: "Espectro autista",
+        desc: "Fundo creme, tipografia escura, sem fundos coloridos.",
+        filter: "sepia(0.35) saturate(0.6) contrast(0.95)",
+        bg: "linear-gradient(135deg,#06d6a0,#118ab2,#073b4c,#ef476f)"
+      },
+      {
+        key: "high_contrast",
+        name: "Alto contraste",
+        group: "Contraste",
+        desc: "Preto profundo, texto branco, links amarelos. Para baixa visão.",
+        filter: "contrast(1.6) saturate(0)",
+        bg: "linear-gradient(135deg,#444,#888,#bbb,#fff)"
+      }
+    ];
+
+    let activeKey = "low_stimulation";
+
+    function renderProfiles() {
+      const grid = document.getElementById("profiles-grid");
+      grid.innerHTML = "";
+      PROFILES.forEach(p => {
+        const btn = document.createElement("button");
+        btn.className = "profile-btn" + (p.key === activeKey ? " active" : "");
+        btn.setAttribute("aria-pressed", p.key === activeKey ? "true" : "false");
+        btn.innerHTML = `
+          <div class="profile-top">
+            <div>
+              <p class="profile-group">${p.group}</p>
+              <p class="profile-name">${p.name}</p>
+            </div>
+            <div class="profile-swatch" style="background:${p.bg};filter:${p.filter}" aria-hidden="true"></div>
+          </div>
+          <p class="profile-desc">${p.desc}</p>
+        `;
+        btn.addEventListener("click", () => {
+          activeKey = p.key;
+          updatePreview(p);
+          renderProfiles();
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    function updatePreview(p) {
+      const screen = document.getElementById("preview-screen");
+      const label = document.getElementById("preview-label");
+      if (screen) screen.style.filter = p.filter;
+      if (label) label.textContent = "preview · " + p.name;
+    }
+
+    function download() {
+      // Tenta baixar o zip do mesmo repositório
+      const a = document.createElement("a");
+      a.href = "https://github.com/EddieDevLife/see-better-lenz/archive/refs/heads/main.zip";
+      a.download = "lenz.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+
+    // Init
+    renderProfiles();
+    const initialProfile = PROFILES.find(p => p.key === activeKey);
+    if (initialProfile) updatePreview(initialProfile);
+  </script>
+</body>
+</html>
